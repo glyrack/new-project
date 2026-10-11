@@ -4,8 +4,8 @@ import requests
 
 
 #Ключи для бота и API погоды
-api_key = '8539189640:AAHH7F8jGhiuoshr62dX6qNnZYYTjl8KJpw'
-weather_key = '1b7bc2a2896f2b23bf8f95065f852812'
+api_key = ''
+weather_key = ''
 
 
 #Бот и переменные
