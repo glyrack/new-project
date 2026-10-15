@@ -38,18 +38,36 @@ def get_weather(city):
 #Функция форматирования-вывода погоды
 def format_weather(chat_id, city, data):
     if data['wind']['speed'] >= 0 and data['wind']['speed'] <= 0.2:
+        if lang == True:
+            weather_speed = "Calm"
+        else:
             weather_speed = "Штиль"
     elif data['wind']['speed'] >= 0.3 and data['wind']['speed'] <= 7.9:
-            weather_speed = "Ветер слабый"
+        if lang == True:
+            weather_speed = "Light wind"
+        else:
+            weather_speed = "Слабый ветер"
     elif data['wind']['speed'] >= 8 and data['wind']['speed'] <= 20.7:
+        if lang == True:
+            weather_speed = "Strong wind"
+        else:
             weather_speed = "Сильный ветер"
     else:
+        if lang == True:
+            weather_speed = "Storm"
+        else:
             weather_speed = "Шторм"
     if speed == True:
-        wind_sp = f"{data['wind']['speed']} м/с"
+        if lang == True:
+            wind_sp = f"{data['wind']['speed']} m/s"
+        else:
+            wind_sp = f"{data['wind']['speed']} м/с"
     elif speed == False:
         form = (data['wind']['speed']) * 3.6 
-        wind_sp = f"{form} км/ч"
+        if lang == True:
+            wind_sp = f"{form} km/h"
+        else:
+            wind_sp = f"{form} км/ч"
         
     markup = types.InlineKeyboardMarkup(row_width=1)
     markup.add(types.InlineKeyboardButton("⬅️Back", callback_data="back"))
@@ -61,6 +79,7 @@ def format_weather(chat_id, city, data):
         h = "Humidity:"
         p = "Pressure:"
         wi = "Wind:"
+        hp = "hPa"
     else:
         we = "Погода в"
         w = "Погода:"
@@ -69,13 +88,14 @@ def format_weather(chat_id, city, data):
         h = "Влажность:"
         p = "Давление:"
         wi = "Ветер:"
+        hp = "гПа"
     bot.send_message(chat_id, f"{we} <b>{city.title()}</b>:\n\n" +
                 f"🌍 <b>{data['name']}, {data['sys']['country']}</b>\n"
                 f"☁️ {w} <b>{data['weather'][0]['description'].capitalize()}</b>\n"
                 f"🌡 {t} <b>{data['main']['temp']:.0f}°C</b>\n"
                 f"🔎 {f} <b>{data['main']['feels_like']:.0f}°C</b>\n"
                 f"💧 {h} <b>{data['main']['humidity']}%</b>\n"
-                f"🧭 {p} <b>{data['main']['pressure']} гПа</b>\n"
+                f"🧭 {p} <b>{data['main']['pressure']} {hp}</b>\n"
                 f"💨 {wi} <b>{wind_sp}</b> ({weather_speed})\n", 
                 parse_mode="HTML", reply_markup=markup)
     global idmessage
