@@ -14,7 +14,7 @@ waiting_city = set()
 back_to = []
 idmessage = False
 speed = True
-degre = None
+degre = True
 lang = True
 
 
@@ -68,6 +68,14 @@ def format_weather(chat_id, city, data):
             wind_sp = f"{form} km/h"
         else:
             wind_sp = f"{form} км/ч"
+    if degre == True:
+        temper = f"{data['main']['temp']:.0f}°C"
+        feels = f"{data['main']['feels_like']:.0f}°C"
+    elif degre == False:
+        znach1 = (data['main']['temp']) * 1.8 + 32
+        temper = f"{znach1:.0f}°F"
+        znach2 = (data['main']['feels_like']) * 1.8 + 32
+        feels = f"{znach2:.0f}°F"
     if lang == True:
         we = "Weather in"
         w = "Weather:"
@@ -93,8 +101,8 @@ def format_weather(chat_id, city, data):
     bot.send_message(chat_id, f"{we} <b>{city.title()}</b>:\n\n" +
                 f"🌍 <b>{data['name']}, {data['sys']['country']}</b>\n"
                 f"☁️ {w} <b>{data['weather'][0]['description'].capitalize()}</b>\n"
-                f"🌡 {t} <b>{data['main']['temp']:.0f}°C</b>\n"
-                f"🔎 {f} <b>{data['main']['feels_like']:.0f}°C</b>\n"
+                f"🌡 {t} <b>{temper}</b>\n"
+                f"🔎 {f} <b>{feels}</b>\n"
                 f"💧 {h} <b>{data['main']['humidity']}%</b>\n"
                 f"🧭 {p} <b>{data['main']['pressure']} {hp}</b>\n"
                 f"💨 {wi} <b>{wind_sp}</b> ({weather_speed})\n", 
@@ -200,23 +208,23 @@ def wind_speed(call):
 def metres(call):
     global speed
     speed = True
-    back_to_menu(call)
     if lang == True: 
         m = "Wind speed will be displayed in meters per second."
     else: 
         m = "Скорость ветра будет отображаться в метрах в секунду."
-    bot.send_message(call.message.chat.id, m, parse_mode="HTML")
+    bot.edit_message_text(m, call.message.chat.id, call.message.message_id, parse_mode="HTML")
+    main(call.message)
 
 @bot.callback_query_handler(func=lambda call: call.data == "kilometr")
 def kilo(call):
     global speed
     speed = False
-    back_to_menu(call)
     if lang == True: 
         k = "Wind speed will be displayed in kilometers per hour."
     else: 
         k = "Скорость ветра будет отображаться в километрах в час."
-    bot.send_message(call.message.chat.id, k, parse_mode="HTML")
+    bot.edit_message_text(k, call.message.chat.id, call.message.message_id, parse_mode="HTML")
+    main(call.message)
     
     
 @bot.callback_query_handler(func=lambda call: call.data == "degree")
@@ -236,6 +244,27 @@ def degree(call):
     bot.edit_message_text(s, call.message.chat.id, call.message.message_id, reply_markup=markup)
     print(list(back_to))
     
+@bot.callback_query_handler(func=lambda call: call.data == "calls")
+def cal(call):
+    global degre
+    degre = True
+    if lang == True:
+        text = "Temperature readings will be displayed in Celsius."
+    else:
+        text = "Показатели температуры будут отображаться в цельсиях."
+    bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode="HTML")
+    main(call.message)
+
+@bot.callback_query_handler(func=lambda call: call.data == "fareng")
+def cal(call):
+    global degre
+    degre = False
+    if lang == True:
+        text = "Temperature readings will be displayed in Fahrenheit."
+    else:
+        text = "Показатели температуры будут отображаться в Фаренгейтах."
+    bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode="HTML")
+    main(call.message)
     
 #Обработчик кнопки смены языка
 @bot.callback_query_handler(func=lambda call: call.data == "change_language")
@@ -262,15 +291,15 @@ def change_language(call):
 def russian(call):
     global lang
     lang = False
+    bot.edit_message_text("Выбран <b>Русский</b> язык.", call.message.chat.id, call.message.message_id, parse_mode="HTML")
     main(call.message)
-    bot.send_message(call.message.chat.id, "Выбран <b>Русский</b> язык.", parse_mode="HTML")
 
 @bot.callback_query_handler(func=lambda call: call.data == "en")
 def russian(call):
     global lang
     lang = True
+    bot.edit_message_text("<b>English</b> language selected", call.message.chat.id, call.message.message_id, parse_mode="HTML")
     main(call.message)
-    bot.send_message(call.message.chat.id, "<b>English</b> language selected", parse_mode="HTML")
 
 #Обработчик кнопки возврата в главное меню
 @bot.callback_query_handler(func=lambda call: call.data == "back")
