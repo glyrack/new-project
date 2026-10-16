@@ -68,9 +68,6 @@ def format_weather(chat_id, city, data):
             wind_sp = f"{form} km/h"
         else:
             wind_sp = f"{form} км/ч"
-        
-    markup = types.InlineKeyboardMarkup(row_width=1)
-    markup.add(types.InlineKeyboardButton("⬅️Back", callback_data="back"))
     if lang == True:
         we = "Weather in"
         w = "Weather:"
@@ -80,6 +77,7 @@ def format_weather(chat_id, city, data):
         p = "Pressure:"
         wi = "Wind:"
         hp = "hPa"
+        b = "⬅️Back"
     else:
         we = "Погода в"
         w = "Погода:"
@@ -89,6 +87,9 @@ def format_weather(chat_id, city, data):
         p = "Давление:"
         wi = "Ветер:"
         hp = "гПа"
+        b = "⬅️Назад"
+    markup = types.InlineKeyboardMarkup(row_width=1)
+    markup.add(types.InlineKeyboardButton(b, callback_data="back"))
     bot.send_message(chat_id, f"{we} <b>{city.title()}</b>:\n\n" +
                 f"🌍 <b>{data['name']}, {data['sys']['country']}</b>\n"
                 f"☁️ {w} <b>{data['weather'][0]['description'].capitalize()}</b>\n"
@@ -107,10 +108,18 @@ def send_weather(chat_id, city):
     try:
        data = get_weather(city)
     except requests.RequestException:
-        bot.send_message(chat_id, "Error, please try again later.")
+        if lang == True: 
+            err = "Error, please try again later."
+        else:
+            err = "Ошибка, пожалуйста попробуйте позже."
+        bot.send_message(chat_id, err)
         waiting_city.add(chat_id)
     if data is None:
-        bot.send_message(chat_id, "City not found!")
+        if lang == True:
+             err = "City not found!"
+        else:
+            err = "Город не найден!"
+        bot.send_message(chat_id, err)
         waiting_city.add(chat_id)
         return
     bot.send_message(chat_id, format_weather(chat_id, city, data), parse_mode="HTML")
@@ -126,7 +135,7 @@ def main(message):
         o = "⚙️ Options"
         w = "🌤 Weather in the city"
     else: 
-        l = "Привет 👋, я — погодный бот! 🤖\n\nПришли мне <b>название города</b>, и я сообщу тебе актуальную информацию о погоде.\n\nНазвание города можно написать на английском или русском языке.\n\nНапример: Лондон, Нью-Йорк, Париж и т. д."
+        l = "Привет 👋, я — погодный бот! 🤖\n\nПришли мне <b>название города</b>, и я сообщу тебе актуальную информацию по погоде.\n\nНазвание города можно написать на английском или русском языке.\n\nНапример: Лондон, Нью-Йорк, Париж и т. д."
         i = "ℹ️ Информация"
         o = "⚙️ Настройки"
         w = "🌤 Погода в городе"
@@ -215,10 +224,10 @@ def degree(call):
     global back_to
     back_to.append("degree")
     if lang == True:
-        b = "⬅️Назад"
+        b = "⬅️Back"
         s = "Show concept degree:"
     else:
-        b = "⬅️Back"
+        b = "⬅️Назад"
         s = "Отображение температуры:"
     markup = types.InlineKeyboardMarkup(row_width=2, one_time_keyboard=True)
     markup.add(types.InlineKeyboardButton("°C", callback_data="calls"))
@@ -233,10 +242,20 @@ def degree(call):
 def change_language(call):
     global back_to
     back_to.append("change_language")
+    if lang == True:
+        b = "⬅️Back"
+        ru = "🇷🇺 Russian"
+        en = "🇬🇧 English"
+        la = "Choose a language:"
+    else:
+        b = "⬅️Назад"
+        ru = "🇷🇺 Русский"
+        en = "🇬🇧 Английский"
+        la = "Выберите язык:"
     markup = types.InlineKeyboardMarkup(row_width=2)
-    markup.add(types.InlineKeyboardButton("🇷🇺 Русский", callback_data="ru"), types.InlineKeyboardButton("🇬🇧 English", callback_data="en"))
-    markup.add(types.InlineKeyboardButton("⬅️Back", callback_data="back"))
-    bot.edit_message_text("Choose a language:", call.message.chat.id, call.message.message_id, reply_markup=markup)
+    markup.add(types.InlineKeyboardButton(ru, callback_data="ru"), types.InlineKeyboardButton(en, callback_data="en"))
+    markup.add(types.InlineKeyboardButton(b, callback_data="back"))
+    bot.edit_message_text(la, call.message.chat.id, call.message.message_id, reply_markup=markup)
     print(list(back_to))
 
 @bot.callback_query_handler(func=lambda call: call.data == "ru")
@@ -269,7 +288,7 @@ def back_to_menu(call):
                 o = "⚙️ Options"
                 w = "🌤 Weather in the city"
             else: 
-                l = "Привет 👋, я — погодный бот! 🤖\n\nПришли мне <b>название города</b>, и я сообщу тебе актуальную информацию о погоде.\n\nНазвание города можно написать на английском или русском языке.\n\nНапример: Лондон, Нью-Йорк, Париж и т. д."
+                l = "Привет 👋, я — погодный бот! 🤖\n\nПришли мне <b>название города</b>, и я сообщу тебе актуальную информацию по погоде.\n\nНазвание города можно написать на английском или русском языке.\n\nНапример: Лондон, Нью-Йорк, Париж и т. д."
                 i = "ℹ️ Информация"
                 o = "⚙️ Настройки"
                 w = "🌤 Погода в городе"
@@ -297,9 +316,15 @@ def back_undo(call):
 @bot.callback_query_handler(func=lambda call: call.data == "info")
 def info_bot(call):
     back_undo(call.data)
+    if lang == True:
+        b = "⬅️Back"
+        information = "This bot was created by @FLLNKNG.\n\nIt provides weather information for cities around the world.\n\nYou can send the name of the city in English and get the current weather data.\n\nFor example: London, New York, Paris, etc."
+    else:
+        b = "⬅️Назад"
+        information = "Данный бот создан @FLLNKNG.\n\nОн предоставляет информацию по погоде для городов по всему миру.\n\nВы можете отправить название города на Русском и получить информацию по погоде на нынешнюю дату.\n\nНапример: Лондон, Нью Йорк, Париж и т.д."
     markup = types.InlineKeyboardMarkup(row_width=1)
-    markup.add(types.InlineKeyboardButton("⬅️Back", callback_data="back"))
-    bot.edit_message_text("This bot was created by @FLLNKNG.\n\nIt provides weather information for cities around the world.\n\nYou can send the name of the city in English and get the current weather data.\n\nFor example: London, New York, Paris, etc.", call.message.chat.id, call.message.message_id,  parse_mode="HTML", reply_markup=markup)
+    markup.add(types.InlineKeyboardButton(b, callback_data="back"))
+    bot.edit_message_text(information, call.message.chat.id, call.message.message_id,  parse_mode="HTML", reply_markup=markup)
 
 
 """ ------ Комманды на получение погоды и проверку кнопки на активность ------ """
@@ -307,9 +332,15 @@ def info_bot(call):
 @bot.callback_query_handler(func=lambda call: call.data == "weather")
 def weather_info(call):
     back_undo(call.data)
+    if lang == True:
+        b = "⬅️Back"
+        text = "Please send me the name of the city in English to get the current weather information:"
+    else:
+        b = "⬅️Назад"
+        text = "Пожалуйста отправь мне название города на Русском для выдачи информации по погоде:"
     markup = types.InlineKeyboardMarkup(row_width=1)
-    markup.add(types.InlineKeyboardButton("⬅️Back", callback_data="back"))
-    bot.edit_message_text("Please send me the name of the city in English to get the current weather information:", call.message.chat.id, call.message.message_id, parse_mode="HTML", reply_markup=markup)
+    markup.add(types.InlineKeyboardButton(b, callback_data="back"))
+    bot.edit_message_text(text, call.message.chat.id, call.message.message_id, parse_mode="HTML", reply_markup=markup)
     waiting_city.add(call.message.chat.id)
 
 #Обработчик получения города от пользователя
@@ -323,8 +354,14 @@ def info(message):
 @bot.message_handler(func=lambda m: m.chat.id not in waiting_city)
 def notinfo(message):
     markup = types.InlineKeyboardMarkup(row_width=1)
-    markup.add(types.InlineKeyboardButton("🌤 Weather in the city", callback_data="weather"))
-    bot.send_message(message.chat.id, "Please click the <b>button</b> to get weather information.", parse_mode="HTML", reply_markup=markup)
+    if lang == True:
+        weather = "🌤 Weather in the city"
+        warn = "Please click the <b>button</b> to get weather information."
+    else:
+        weather = "🌤 Погода в городе"
+        warn = "Пожалуйста нажмите <b>кнопку</b> для получения информации по погоде."
+    markup.add(types.InlineKeyboardButton(weather, callback_data="weather"))
+    bot.send_message(message.chat.id, warn, parse_mode="HTML", reply_markup=markup)
 
 
 #Запуска бота
