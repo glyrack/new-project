@@ -1,11 +1,12 @@
+#Импортируемые библиотеки
 import telebot
 from telebot import types
 import requests
 import logging
 
 #Ключи для бота, API погоды и логгирование
-api_key = '' #Токен телеграм бота
-weather_key = '' #API от сайта для получения погоды, по миру
+api_key = '8860077362:AAE8jZT2dNKR8aLDNuVxaUNWqeffn-XSMUw' #Токен телеграм бота
+weather_key = '1b7bc2a2896f2b23bf8f95065f852812' #API от сайта для получения погоды, по миру
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 logging.info("Бот запущен") #Вывод в консоль соо о запуске бота 
@@ -19,129 +20,16 @@ idmessage = False
 speed = True
 degre = True
 lang = True
-begin = False
 mess = None
 
+#Меню для помощи по коммандам
 bot.set_my_commands([types.BotCommand("start", "Запустить бота"),
-    types.BotCommand("weather", "Узнать погоду"),
-    types.BotCommand("help", "Помощь")])
-
-#Функция для получения погоды
-def get_weather(city):
-    if lang == True:
-        lan = "en"
-    else:
-        lan = "ru"
-    url = "https://api.openweathermap.org/data/2.5/weather"
-    params = {"q": city, "appid": weather_key, "units": "metric", "lang": lan}
-    response = requests.get(url, params=params, timeout=10)
-    if response.status_code == 404:
-        return
-    if response.status_code == 400:
-        return
-    response.raise_for_status()
-    return response.json()
-        
-        
-#Функция форматирования-вывода погоды
-def format_weather(chat_id, city, data):
-    if data['wind']['speed'] >= 0 and data['wind']['speed'] <= 0.2:
-        if lang == True:
-            weather_speed = "Calm"
-        else:
-            weather_speed = "Штиль"
-    elif data['wind']['speed'] >= 0.3 and data['wind']['speed'] <= 7.9:
-        if lang == True:
-            weather_speed = "Light wind"
-        else:
-            weather_speed = "Слабый ветер"
-    elif data['wind']['speed'] >= 8 and data['wind']['speed'] <= 20.7:
-        if lang == True:
-            weather_speed = "Strong wind"
-        else:
-            weather_speed = "Сильный ветер"
-    else:
-        if lang == True:
-            weather_speed = "Storm"
-        else:
-            weather_speed = "Шторм"
-    if speed == True:
-        if lang == True:
-            wind_sp = f"{data['wind']['speed']} m/s"
-        else:
-            wind_sp = f"{data['wind']['speed']} м/с"
-    elif speed == False:
-        form = (data['wind']['speed']) * 3.6 
-        if lang == True:
-            wind_sp = f"{form} km/h"
-        else:
-            wind_sp = f"{form} км/ч"
-    if degre == True:
-        temper = f"{data['main']['temp']:.0f}°C"
-        feels = f"{data['main']['feels_like']:.0f}°C"
-    elif degre == False:
-        znach1 = (data['main']['temp']) * 1.8 + 32
-        temper = f"{znach1:.0f}°F"
-        znach2 = (data['main']['feels_like']) * 1.8 + 32
-        feels = f"{znach2:.0f}°F"
-    if lang == True:
-        we = "Weather in"
-        w = "Weather:"
-        t = "Temperature:"
-        f = "Feels like:"
-        h = "Humidity:"
-        p = "Pressure:"
-        wi = "Wind:"
-        hp = "hPa"
-        m = "☰ Menu"
-    else:
-        we = "Погода в"
-        w = "Погода:"
-        t = "Температура:"
-        f = "Ощущается как:"
-        h = "Влажность:"
-        p = "Давление:"
-        wi = "Ветер:"
-        hp = "гПа"
-        m = "☰ Меню"
-    markup = types.InlineKeyboardMarkup(row_width=1)
-    markup.add(types.InlineKeyboardButton(m, callback_data="back"))
-    bot.send_message(chat_id, f"{we} <b>{city.title()}</b>:\n\n" +
-                f"🌍 <b>{data['name']}, {data['sys']['country']}</b>\n"
-                f"☁️ {w} <b>{data['weather'][0]['description'].capitalize()}</b>\n"
-                f"🌡 {t} <b>{temper}</b>\n"
-                f"🔎 {f} <b>{feels}</b>\n"
-                f"💧 {h} <b>{data['main']['humidity']}%</b>\n"
-                f"🧭 {p} <b>{data['main']['pressure']} {hp}</b>\n"
-                f"💨 {wi} <b>{wind_sp}</b> ({weather_speed})\n", 
-                parse_mode="HTML", reply_markup=markup)
-    global idmessage
-    idmessage = True
-    logger.info(f"Пользователь %s (%s) получил погоду города {data['name']}, страны {data['sys']['country']}", mess.from_user.username, chat_id)
+    types.BotCommand("weather", "Узнать погоду"), 
+    types.BotCommand("info", "Информация по боту")])
 
 
-#Функция для отправки погоды
-def send_weather(chat_id, city):
-    try:
-       data = get_weather(city)
-    except requests.RequestException:
-        if lang == True: 
-            err = "Error, please try again later."
-        else:
-            err = "Ошибка, пожалуйста попробуйте позже."
-        bot.send_message(chat_id, err)
-        waiting_city.add(chat_id)
-    if data is None:
-        if lang == True:
-             err = "City not found!"
-        else:
-            err = "Город не найден!"
-        bot.send_message(chat_id, err)
-        waiting_city.add(chat_id)
-        return
-    format_weather(chat_id, city, data)
 
-
+""" ------ Запуск бота и меню ------ """
 #Обработчик стартовых команд
 @bot.message_handler(commands=['start'])
 def language(message):
@@ -149,8 +37,6 @@ def language(message):
     mess = message
     logger.info("Пользователь %s (%s) вызвал /start", message.from_user.username, message.chat.id)
     waiting_city.discard(message.chat.id)
-    global begin
-    begin = True
     if lang == True:
         ru = "🇷🇺 Russian"
         en = "🇬🇧 English"
@@ -190,6 +76,41 @@ def main(message):
     #print(list(back_to))
 
 
+
+""" ------ Вкладка информации о боте ------ """
+#Обработчик комманды информации о боте
+@bot.message_handler(commands=["info"])
+def inf(message):
+    logger.info("Пользователь %s (%s) перешёл в 'Информацию'", message.from_user.username, message.chat.id)
+    if lang == True:
+        m = "☰ Menu"
+        information = "This bot was created by @FLLNKNG.\n\nIt provides weather information for cities around the world.\n\nYou can send the name of the city in English and get the current weather data.\n\nFor example: London, New York, Paris, etc."
+    else:
+        m = "☰ Меню"
+        information = "Данный бот создан @FLLNKNG.\n\nОн предоставляет информацию по погоде для городов по всему миру.\n\nВы можете отправить название города на Русском и получить информацию по погоде на нынешнюю дату.\n\nНапример: Лондон, Нью Йорк, Париж и т.д."
+    markup = types.InlineKeyboardMarkup(row_width=1)
+    markup.add(types.InlineKeyboardButton(m, callback_data="menu"))
+    bot.send_message(message.chat.id, information,  parse_mode="HTML", reply_markup=markup)
+
+#Обработчик кнопки информации о боте
+@bot.callback_query_handler(func=lambda call: call.data == "info")
+def info_bot(call):
+    bot.answer_callback_query(call.id)
+    logger.info("Пользователь %s (%s) перешёл в 'Информацию'", call.message.from_user.username, call.message.chat.id)
+    back_undo(call.data)
+    if lang == True:
+        b = "⬅️Back"
+        information = "This bot was created by @FLLNKNG.\n\nIt provides weather information for cities around the world.\n\nYou can send the name of the city in English and get the current weather data.\n\nFor example: London, New York, Paris, etc."
+    else:
+        b = "⬅️Назад"
+        information = "Данный бот создан @FLLNKNG.\n\nОн предоставляет информацию по погоде для городов по всему миру.\n\nВы можете отправить название города на Русском и получить информацию по погоде на нынешнюю дату.\n\nНапример: Лондон, Нью Йорк, Париж и т.д."
+    markup = types.InlineKeyboardMarkup(row_width=1)
+    markup.add(types.InlineKeyboardButton(b, callback_data="back"))
+    bot.edit_message_text(information, call.message.chat.id, call.message.message_id,  parse_mode="HTML", reply_markup=markup)
+
+
+
+""" ------ Плашка настроек ------ """
 #Обработка вызова меню настроек
 @bot.callback_query_handler(func=lambda call: call.data == "options")
 def parametr(call):
@@ -358,6 +279,9 @@ def russian(call):
     bot.edit_message_text("<b>English</b> language selected", call.message.chat.id, call.message.message_id, parse_mode="HTML")
     main(call.message)
 
+
+
+""" ------ Комманды на возвращение в меню и отмену действий ------ """
 #Обработчик кнопки возврата в главное меню
 @bot.callback_query_handler(func=lambda call: call.data == "back")
 def back_to_menu(call):
@@ -375,7 +299,7 @@ def back_to_menu(call):
                 i = "ℹ️ Info"
                 o = "⚙️ Options"
                 w = "🌤 Weather in the city"
-            else: 
+            else:
                 l = "Привет 👋, я — погодный бот! 🤖\n\nПришли мне <b>название города</b>, и я сообщу тебе актуальную информацию по погоде.\n\nНазвание города можно написать на английском или русском языке.\n\nНапример: Лондон, Нью-Йорк, Париж и т. д."
                 i = "ℹ️ Информация"
                 o = "⚙️ Настройки"
@@ -399,22 +323,11 @@ def back_undo(call):
     back_to.clear()
     back_to.append(call)
 
-
-#Обработчик кнопки информации о боте
-@bot.callback_query_handler(func=lambda call: call.data == "info")
-def info_bot(call):
+#Вызов главного меню
+@bot.callback_query_handler(func=lambda call: call.data == "menu")
+def men(call):
     bot.answer_callback_query(call.id)
-    logger.info("Пользователь %s (%s) перешёл в 'Информацию'", call.message.from_user.username, call.message.chat.id)
-    back_undo(call.data)
-    if lang == True:
-        b = "⬅️Back"
-        information = "This bot was created by @FLLNKNG.\n\nIt provides weather information for cities around the world.\n\nYou can send the name of the city in English and get the current weather data.\n\nFor example: London, New York, Paris, etc."
-    else:
-        b = "⬅️Назад"
-        information = "Данный бот создан @FLLNKNG.\n\nОн предоставляет информацию по погоде для городов по всему миру.\n\nВы можете отправить название города на Русском и получить информацию по погоде на нынешнюю дату.\n\nНапример: Лондон, Нью Йорк, Париж и т.д."
-    markup = types.InlineKeyboardMarkup(row_width=1)
-    markup.add(types.InlineKeyboardButton(b, callback_data="back"))
-    bot.edit_message_text(information, call.message.chat.id, call.message.message_id,  parse_mode="HTML", reply_markup=markup)
+    main(call.message)
 
 
 """ ------ Комманды на получение погоды и проверку кнопки на активность ------ """
@@ -471,5 +384,118 @@ def notinfo(message):
     markup.add(types.InlineKeyboardButton(weather, callback_data="weather"))
     bot.send_message(message.chat.id, warn, parse_mode="HTML", reply_markup=markup)
 
+#Функция для получения погоды
+def get_weather(city):
+    if lang == True:
+        lan = "en"
+    else:
+        lan = "ru"
+    url = "https://api.openweathermap.org/data/2.5/weather"
+    params = {"q": city, "appid": weather_key, "units": "metric", "lang": lan}
+    response = requests.get(url, params=params, timeout=10)
+    if response.status_code == 404:
+        return
+    if response.status_code == 400:
+        return
+    response.raise_for_status()
+    return response.json()
+         
+#Функция форматирования-вывода погоды
+def format_weather(chat_id, city, data):
+    if data['wind']['speed'] >= 0 and data['wind']['speed'] <= 0.2:
+        if lang == True:
+            weather_speed = "Calm"
+        else:
+            weather_speed = "Штиль"
+    elif data['wind']['speed'] >= 0.3 and data['wind']['speed'] <= 7.9:
+        if lang == True:
+            weather_speed = "Light wind"
+        else:
+            weather_speed = "Слабый ветер"
+    elif data['wind']['speed'] >= 8 and data['wind']['speed'] <= 20.7:
+        if lang == True:
+            weather_speed = "Strong wind"
+        else:
+            weather_speed = "Сильный ветер"
+    else:
+        if lang == True:
+            weather_speed = "Storm"
+        else:
+            weather_speed = "Шторм"
+    if speed == True:
+        if lang == True:
+            wind_sp = f"{data['wind']['speed']} m/s"
+        else:
+            wind_sp = f"{data['wind']['speed']} м/с"
+    elif speed == False:
+        form = (data['wind']['speed']) * 3.6 
+        if lang == True:
+            wind_sp = f"{form} km/h"
+        else:
+            wind_sp = f"{form} км/ч"
+    if degre == True:
+        temper = f"{data['main']['temp']:.0f}°C"
+        feels = f"{data['main']['feels_like']:.0f}°C"
+    elif degre == False:
+        znach1 = (data['main']['temp']) * 1.8 + 32
+        temper = f"{znach1:.0f}°F"
+        znach2 = (data['main']['feels_like']) * 1.8 + 32
+        feels = f"{znach2:.0f}°F"
+    if lang == True:
+        we = "Weather in"
+        w = "Weather:"
+        t = "Temperature:"
+        f = "Feels like:"
+        h = "Humidity:"
+        p = "Pressure:"
+        wi = "Wind:"
+        hp = "hPa"
+        m = "☰ Menu"
+    else:
+        we = "Погода в"
+        w = "Погода:"
+        t = "Температура:"
+        f = "Ощущается как:"
+        h = "Влажность:"
+        p = "Давление:"
+        wi = "Ветер:"
+        hp = "гПа"
+        m = "☰ Меню"
+    markup = types.InlineKeyboardMarkup(row_width=1)
+    markup.add(types.InlineKeyboardButton(m, callback_data="back"))
+    bot.send_message(chat_id, f"{we} <b>{city.title()}</b>:\n\n" +
+                f"🌍 <b>{data['name']}, {data['sys']['country']}</b>\n"
+                f"☁️ {w} <b>{data['weather'][0]['description'].capitalize()}</b>\n"
+                f"🌡 {t} <b>{temper}</b>\n"
+                f"🔎 {f} <b>{feels}</b>\n"
+                f"💧 {h} <b>{data['main']['humidity']}%</b>\n"
+                f"🧭 {p} <b>{data['main']['pressure']} {hp}</b>\n"
+                f"💨 {wi} <b>{wind_sp}</b> ({weather_speed})\n", 
+                parse_mode="HTML", reply_markup=markup)
+    global idmessage
+    idmessage = True
+    logger.info(f"Пользователь %s (%s) получил погоду города {data['name']}, страны {data['sys']['country']}", mess.from_user.username, chat_id)
+
+#Функция для отправки погоды
+def send_weather(chat_id, city):
+    try:
+       data = get_weather(city)
+    except requests.RequestException:
+        if lang == True: 
+            err = "Error, please try again later."
+        else:
+            err = "Ошибка, пожалуйста попробуйте позже."
+        bot.send_message(chat_id, err)
+        waiting_city.add(chat_id)
+    if data is None:
+        if lang == True:
+             err = "City not found!"
+        else:
+            err = "Город не найден!"
+        bot.send_message(chat_id, err)
+        waiting_city.add(chat_id)
+        return
+    format_weather(chat_id, city, data)
+
 #Запуска бота
-bot.infinity_polling()
+bot.polling(non_stop=True)
