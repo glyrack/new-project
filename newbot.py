@@ -119,23 +119,81 @@ def parametr(call):
     back_undo("options")
     if lang == True: 
         c = "🌐 Change language"
-        w = "💨 wind speed"
-        d = "🌡️ degrees"
+        w = "💨 Wind speed"
+        d = "🌡️ Degrees"
         b = "⬅️Back"
-        op = "Configuration options:"
+        op = "Configuration options: "
+        cus = "🔧 Customize"
     else: 
         c = "🌐 Изменить язык"
         w = "💨 скорость ветра"
         d = "🌡️ градусы"
         b = "⬅️Назад"
         op = "Конфигурации настроек:"
+        cus = "🔧 Настройка"
     markup = types.InlineKeyboardMarkup(row_width=2, one_time_keyboard=True)
-    markup.add(types.InlineKeyboardButton(c, callback_data="change_language"))
+    markup.add(types.InlineKeyboardButton(c, callback_data="change_language"), types.InlineKeyboardButton(cus, callback_data="customize"))
     markup.add(types.InlineKeyboardButton(w, callback_data="wind"), types.InlineKeyboardButton(d, callback_data="degree"))
     markup.add(types.InlineKeyboardButton(b, callback_data="back"))
     bot.edit_message_text(op, call.message.chat.id, call.message.message_id, reply_markup=markup)
     #print(list(back_to))
     
+we_sos = True
+temp_sos = True
+fel_sos = True
+hum_sos = True
+pres_sos = True
+wind_sos = True
+
+def sostoyanie(name, state):
+    return f"{name} - {"✅" if state else "❌"}"
+
+@bot.callback_query_handler(func=lambda call: call.data == "customize")
+def custom(call):
+    bot.answer_callback_query(call.id)
+    global back_to
+    b = "⬅️Назад"
+    c = "Configuration:"
+    markup = types.InlineKeyboardMarkup(row_width=7)
+    markup.add(types.InlineKeyboardButton(sostoyanie("Погодные условия", we_sos), callback_data="wetr"))
+    markup.add(types.InlineKeyboardButton(sostoyanie("Температура", temp_sos), callback_data="temptr"))
+    markup.add(types.InlineKeyboardButton(sostoyanie("Ощущение погоды", fel_sos), callback_data="feltr"))
+    markup.add(types.InlineKeyboardButton(sostoyanie("Влажность", hum_sos), callback_data="humtr"))
+    markup.add(types.InlineKeyboardButton(sostoyanie("Давление", pres_sos), callback_data="prestr"))
+    markup.add(types.InlineKeyboardButton(sostoyanie("Скорость ветра", wind_sos), callback_data="windtr"))
+    markup.add(types.InlineKeyboardButton(b, callback_data="back"))
+    bot.edit_message_text(c, call.message.chat.id, call.message.message_id, reply_markup=markup)
+
+@bot.callback_query_handler(func=lambda call: call.data == "wetr")
+def wetr(call):
+    global we_sos
+    we_sos = (not we_sos)
+    custom(call)
+@bot.callback_query_handler(func=lambda call: call.data == "temptr")
+def temptr(call):
+    global temp_sos
+    temp_sos = (not temp_sos)
+    custom(call)
+@bot.callback_query_handler(func=lambda call: call.data == "feltr")
+def feltr(call):
+    global fel_sos
+    fel_sos = (not fel_sos)
+    custom(call)
+@bot.callback_query_handler(func=lambda call: call.data == "humtr")
+def humtr(call):
+    global hum_sos
+    hum_sos = (not hum_sos)
+    custom(call)
+@bot.callback_query_handler(func=lambda call: call.data == "prestr")
+def prestr(call):
+    global pres_sos
+    pres_sos = (not pres_sos)
+    custom(call)
+@bot.callback_query_handler(func=lambda call: call.data == "windtr")
+def windtr(call):
+    global wind_sos
+    wind_sos = (not wind_sos)
+    custom(call)
 
 #Обработка вызова меню отображения скорости ветра 
 @bot.callback_query_handler(func=lambda call: call.data == "wind")
@@ -272,7 +330,7 @@ def russian(call):
 
 #Обработчик кнопки английского языка в меню настроек
 @bot.callback_query_handler(func=lambda call: call.data == "en")
-def russian(call):
+def english(call):
     logger.info("Пользователь %s (%s) выбрал отображение интерфейса на 'Английском языке'", call.message.from_user.username, call.message.chat.id)
     global lang
     lang = True
@@ -424,11 +482,11 @@ def format_weather(chat_id, city, data):
             weather_speed = "Шторм"
     if speed == True:
         if lang == True:
-            wind_sp = f"{data['wind']['speed']} m/s"
+            wind_sp = f"{round((data['wind']['speed']), 2)} m/s"
         else:
-            wind_sp = f"{data['wind']['speed']} м/с"
+            wind_sp = f"{round((data['wind']['speed']), 2)} м/с"
     elif speed == False:
-        form = (data['wind']['speed']) * 3.6 
+        form = round((data['wind']['speed'] * 3.6), 2)
         if lang == True:
             wind_sp = f"{form} km/h"
         else:
