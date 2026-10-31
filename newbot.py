@@ -5,8 +5,8 @@ import requests
 import logging
 
 #Ключи для бота, API погоды и логгирование
-api_key = '8860077362:AAE8jZT2dNKR8aLDNuVxaUNWqeffn-XSMUw' #Токен телеграм бота
-weather_key = '1b7bc2a2896f2b23bf8f95065f852812' #API от сайта для получения погоды, по миру
+api_key = '' #Токен телеграм бота
+weather_key = '' #API от сайта для получения погоды, по миру
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 logging.info("Бот запущен") #Вывод в консоль соо о запуске бота 
