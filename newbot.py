@@ -5,8 +5,8 @@ import requests
 import logging
 
 #Ключи для бота, API погоды и логгирование
-api_key = '' #Токен телеграм бота
-weather_key = '' #API от сайта для получения погоды, по миру
+api_key = '8860077362:AAE8jZT2dNKR8aLDNuVxaUNWqeffn-XSMUw' #Токен телеграм бота
+weather_key = '1b7bc2a2896f2b23bf8f95065f852812' #API от сайта для получения погоды, по миру
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 logging.info("Бот запущен") #Вывод в консоль соо о запуске бота 
@@ -521,18 +521,20 @@ def format_weather(chat_id, city, data):
         m = "☰ Меню"
     markup = types.InlineKeyboardMarkup(row_width=1)
     markup.add(types.InlineKeyboardButton(m, callback_data="back"))
-    bot.send_message(chat_id, f"{we} <b>{city.title()}</b>:\n\n" +
-                f"🌍 <b>{data['name']}, {data['sys']['country']}</b>\n"
-                f"☁️ {w} <b>{data['weather'][0]['description'].capitalize()}</b>\n"
-                f"🌡 {t} <b>{temper}</b>\n"
-                f"🔎 {f} <b>{feels}</b>\n"
-                f"💧 {h} <b>{data['main']['humidity']}%</b>\n"
-                f"🧭 {p} <b>{data['main']['pressure']} {hp}</b>\n"
-                f"💨 {wi} <b>{wind_sp}</b> ({weather_speed})\n", 
-                parse_mode="HTML", reply_markup=markup)
+    vivod = (f"{we} <b>{city.title()}</b>:\n\n" + f"🌍 <b>{data['name']}, {data['sys']['country']}</b>\n" +
+                output(f"☁️ {w} <b>{data['weather'][0]['description'].capitalize()}</b>\n", we_sos) +
+                output(f"🌡 {t} <b>{temper}</b>\n", temp_sos) +
+                output(f"🔎 {f} <b>{feels}</b>\n", fel_sos) +
+                output(f"💧 {h} <b>{data['main']['humidity']}%</b>\n", hum_sos) +
+                output(f"🧭 {p} <b>{data['main']['pressure']} {hp}</b>\n", pres_sos) +
+                output(f"💨 {wi} <b>{wind_sp}</b> ({weather_speed})\n", wind_sos))
+    bot.send_message(chat_id, vivod, parse_mode="HTML", reply_markup=markup)
     global idmessage
     idmessage = True
     logger.info(f"Пользователь %s (%s) получил погоду города {data['name']}, страны {data['sys']['country']}", mess.from_user.username, chat_id)
+
+def output(text, status):
+    return text if status else ""
 
 #Функция для отправки погоды
 def send_weather(chat_id, city):
