@@ -5,8 +5,8 @@ import requests
 import logging
 
 #Ключи для бота, API погоды и логгирование
-api_key = '' #Токен телеграм бота
-weather_key = '' #API от сайта для получения погоды, по миру
+api_key = '8860077362:AAE8jZT2dNKR8aLDNuVxaUNWqeffn-XSMUw' #Токен телеграм бота
+weather_key = '1b7bc2a2896f2b23bf8f95065f852812' #API от сайта для получения погоды, по миру
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 logging.info("Бот запущен") #Вывод в консоль соо о запуске бота 
@@ -19,7 +19,7 @@ TEXT = {"en":{"ru":"🇷🇺 Russian", "en":"🇬🇧 English", "la":"Choose a l
               "b":"⬅️ Back", "Cl":"🌐 Change language", "ws":"💨 Wind speed", "dgrs":"🌡️ Degrees", "op":"Configuration options:", "cus":"🔧 Customize", "conf":"Configuration:", "kh":"km/h", "ms":"m/s",
               "scs":"Show concept speed:", "wswms":"Wind speed will be displayed in meters per second.", "wswkh": "Wind speed will be displayed in kilometers per hour.", "scd":"Show concept degree:", 
               "trc":"Temperature readings will be displayed in Celsius.", "trf":"Temperature readings will be displayed in Fahrenheit.", "psm":"Please send me the name of the city in English to get the current weather information:",
-              "pctb":"Please click the <b>button</b> to get weather information.", "lan":"en", "wi":"Weather in", "weat":"Weather:", "temper":"Temperature:", "fl":"Feels like:", "hum":"Humidity", "pres":"Pressure",
+              "pctb":"Please click the <b>button</b> to get weather information.", "lan":"en", "wi":"Weather in", "weat":"Weather:", "temper":"Temperature:", "fl":"Feels like:", "hum":"Humidity:", "pres":"Pressure:",
               "wind":"Wind:", "hp":"hPa", "err1":"Error, please try again later.", "err2":"City not found!",
               "calm":"Calm", "lw":"Light wind", "sw":"Strong wind", "storm":"Storm", "wecon":"Weather conditions", "tempcon":"Temperature", "feelcon":"Feels like", "humcon":"Humidity", "prescon":"Pressure", "windcon":"Wind speed"},
         "ru":{"ru":"🇷🇺 Русский", "en":"🇬🇧 Английский", "la":"Выберите язык:", "hello":"Привет 👋, я — погодный бот! 🤖\n\nПришли мне <b>название города</b>, и я сообщу тебе актуальную информацию по погоде.\n\nНазвание города можно написать на английском или русском языке.\n\nНапример: Лондон, Нью-Йорк, Париж и т. д.", 
@@ -160,6 +160,7 @@ def custom(call):
 #Изменение состояния кнопок в меню настроек
 @bot.callback_query_handler(func=lambda call: call.data in ("wetr", "temptr", "feltr", "humtr", "prestr", "windtr"))
 def toggle(call):
+    bot.answer_callback_query(call.id)
     names = {"wetr":"we_sos", "temptr":"temp_sos", "feltr":"fel_sos", "humtr":"hum_sos", "prestr":"pres_sos", "windtr":"wind_sos"}
     u = user_settings(call.message.chat.id)
     key = names[call.data]
@@ -219,7 +220,7 @@ def degree(call):
 
 #Обработчик кнопки смены отображения в цельсиях
 @bot.callback_query_handler(func=lambda call: call.data == "calls")
-def cal(call):
+def calls(call):
     bot.answer_callback_query(call.id)
     logger.info("Пользователь %s (%s) выбрал отображение Цельсиях", call.from_user.username, call.message.chat.id)
     u = user_settings(call.message.chat.id)
@@ -230,7 +231,7 @@ def cal(call):
 
 #Обработчик кнопки смены отображения в фаренгейтах
 @bot.callback_query_handler(func=lambda call: call.data == "fareng")
-def cal(call):
+def fareng(call):
     bot.answer_callback_query(call.id)
     logger.info("Пользователь %s (%s) выбрал отображение в Фаренгейтах", call.from_user.username, call.message.chat.id)
     u = user_settings(call.message.chat.id)
@@ -371,10 +372,10 @@ def format_weather(chat_id, city, data):
     u = user_settings(chat_id)
     if data['wind']['speed'] >= 0 and data['wind']['speed'] <= 0.2: 
         weather_speed = lg["calm"]
-    elif data['wind']['speed'] >= 0.3 and data['wind']['speed'] <= 7.9: 
+    elif data['wind']['speed'] > 0.2 and data['wind']['speed'] <= 8: 
         weather_speed = lg["lw"]
-    elif data['wind']['speed'] >= 8 and data['wind']['speed'] <= 20.7: 
-        weather_speed = "sw"
+    elif data['wind']['speed'] > 8 and data['wind']['speed'] <= 20.7: 
+        weather_speed = lg["sw"]
     else: weather_speed = lg["storm"]
     if u["speed"] == True: 
         wind_sp = f"{round((data['wind']['speed']), 2)} {lg["ms"]}"
